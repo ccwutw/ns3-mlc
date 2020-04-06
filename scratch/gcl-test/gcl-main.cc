@@ -42,7 +42,7 @@ NS_LOG_COMPONENT_DEFINE ("GCLSimulation");
 int
 main (int argc, char *argv[])
 {
-  uint16_t numNodePairs = 2;
+  uint16_t numNodePairs = 1;
   uint16_t numUE = 1;
   uint16_t numGnb = 20;
   Time simTime = MilliSeconds (1100);
@@ -167,6 +167,7 @@ main (int argc, char *argv[])
       // Set the default gateway for the UE
       Ptr<Ipv4StaticRouting> ueStaticRouting = ipv4RoutingHelper.GetStaticRouting (ueNode->GetObject<Ipv4> ());
       ueStaticRouting->SetDefaultRoute (epcHelper->GetUeDefaultGatewayAddress (), 1);
+      std::cout << "  Default Gateway Address " << epcHelper->GetUeDefaultGatewayAddress () << "\n";
     }
 
   // Attach one UE per eNodeB
