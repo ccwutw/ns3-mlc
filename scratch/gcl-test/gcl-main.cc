@@ -170,7 +170,7 @@ main (int argc, char *argv[])
     }
 
   // Attach one UE per eNodeB
-  for (uint16_t i = 0; i < numNodePairs; i++)
+  for (uint16_t i = 0; i < numUE; i++)
     {
       lteHelper->Attach (ueLteDevs.Get(i), enbLteDevs.Get(i));
       // side effect: the default EPS bearer will be activated
@@ -221,7 +221,7 @@ main (int argc, char *argv[])
         }
     }
 
-  serverApps.Start (MilliSeconds (500));
+  serverApps.Start (MilliSeconds (480));
   clientApps.Start (MilliSeconds (500));
   lteHelper->EnableTraces ();
   // Uncomment to enable PCAP tracing
