@@ -37,14 +37,16 @@ using namespace ns3;
  * It also starts another flow between each UE pair.
  */
 
-NS_LOG_COMPONENT_DEFINE ("LenaSimpleEpc");
+NS_LOG_COMPONENT_DEFINE ("GCLSimulation");
 
 int
 main (int argc, char *argv[])
 {
   uint16_t numNodePairs = 2;
+  uint16_t numUE = 1;
+  uint16_t numGnb = 20;
   Time simTime = MilliSeconds (1100);
-  double distance = 60.0;
+  double distance = 13.0;
   Time interPacketInterval = MilliSeconds (100);
   bool useCa = false;
   bool disableDl = false;
@@ -106,24 +108,52 @@ main (int argc, char *argv[])
   remoteHostStaticRouting->AddNetworkRouteTo (Ipv4Address ("7.0.0.0"), Ipv4Mask ("255.0.0.0"), 1);
 
   NodeContainer ueNodes;
-  NodeContainer enbNodes;
-  enbNodes.Create (numNodePairs);
-  ueNodes.Create (numNodePairs);
+  NodeContainer gnbNodes;
+  gnbNodes.Create (numGnb);
+  ueNodes.Create (numUE);
 
   // Install Mobility Model
   Ptr<ListPositionAllocator> positionAlloc = CreateObject<ListPositionAllocator> ();
-  for (uint16_t i = 0; i < numNodePairs; i++)
+  for (uint16_t i = 0; i < numUE; i++)
     {
       positionAlloc->Add (Vector (distance * i, 0, 0));
     }
-  MobilityHelper mobility;
-  mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
-  mobility.SetPositionAllocator(positionAlloc);
-  mobility.Install(enbNodes);
-  mobility.Install(ueNodes);
+  MobilityHelper ueMobility;
+  ueMobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
+  ueMobility.SetPositionAllocator(positionAlloc);
+  ueMobility.Install(ueNodes);
+
+  MobilityHelper gnbMobility;
+  // setup the grid itself: objects are laid out
+  // started from (0,0) with 5 objects per row, 
+  // the x interval between each object is 5 meters
+  // and the y interval between each object is 5 meters
+  gnbMobility.SetPositionAllocator ("ns3::GridPositionAllocator",
+                                 "MinX", DoubleValue (0.0),
+                                 "MinY", DoubleValue (0.0),
+                                 "DeltaX", DoubleValue (5.0),
+                                 "DeltaY", DoubleValue (5.0),
+                                 "GridWidth", UintegerValue (5), //the number of objects laid out on a line
+                                 "LayoutType", StringValue ("RowFirst"));
+
+  gnbMobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
+  gnbMobility.Install (gnbNodes);
+
+  /** DEBUG
+  // iterate our nodes and print their position.
+  for (NodeContainer::Iterator j = gnbNodes.Begin ();
+       j != gnbNodes.End (); ++j)
+    {
+      Ptr<Node> object = *j;
+      Ptr<MobilityModel> position = object->GetObject<MobilityModel> ();
+      NS_ASSERT (position != 0);
+      Vector pos = position->GetPosition ();
+      std::cout << "x=" << pos.x << ", y=" << pos.y << ", z=" << pos.z << std::endl;
+    }
+  DEBUG **/
 
   // Install LTE Devices to the nodes
-  NetDeviceContainer enbLteDevs = lteHelper->InstallEnbDevice (enbNodes);
+  NetDeviceContainer enbLteDevs = lteHelper->InstallEnbDevice (gnbNodes);
   NetDeviceContainer ueLteDevs = lteHelper->InstallUeDevice (ueNodes);
 
   // Install the IP stack on the UEs
