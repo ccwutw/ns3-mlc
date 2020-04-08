@@ -22,6 +22,7 @@
 #include "ns3/internet-module.h"
 #include "ns3/applications-module.h"
 #include "ns3/mobility-module.h"
+#include "ns3/netanim-module.h"
 #include "ns3/config-store-module.h"
 #include "ns3/lte-module.h"
 //#include "ns3/gtk-config-store.h"
@@ -42,16 +43,16 @@ NS_LOG_COMPONENT_DEFINE ("GCLSimulation");
 int
 main (int argc, char *argv[])
 {
-  uint16_t numNodePairs = 1;
-  uint16_t numUE = 1;
+  uint16_t numNodePairs = 2;
+  uint16_t numUE = 2;
   uint16_t numGnb = 20;
-  Time simTime = MilliSeconds (1100);
+  Time simTime = MilliSeconds (2000);
   double distance = 13.0;
   Time interPacketInterval = MilliSeconds (100);
   bool useCa = false;
   bool disableDl = false;
   bool disableUl = false;
-  bool disablePl = false;
+  bool disablePl = true; //disable p2p between UE in default
 
   // Command line arguments
   CommandLine cmd;
@@ -77,19 +78,31 @@ main (int argc, char *argv[])
      Config::SetDefault ("ns3::LteHelper::NumberOfComponentCarriers", UintegerValue (2));
      Config::SetDefault ("ns3::LteHelper::EnbComponentCarrierManager", StringValue ("ns3::RrComponentCarrierManager"));
    }
+  
+  Config::SetDefault ("ns3::LteSpectrumPhy::CtrlErrorModelEnabled", BooleanValue (false));
+  Config::SetDefault ("ns3::LteSpectrumPhy::DataErrorModelEnabled", BooleanValue (false));  
+
+
 
   Ptr<LteHelper> lteHelper = CreateObject<LteHelper> ();
   Ptr<PointToPointEpcHelper> epcHelper = CreateObject<PointToPointEpcHelper> ();
   lteHelper->SetEpcHelper (epcHelper);
 
+  //PGW Node
   Ptr<Node> pgw = epcHelper->GetPgwNode ();
+  AnimationInterface::SetConstantPosition (pgw, 1, 29);
 
-   // Create a single RemoteHost
+  //SGW node
+  Ptr<Node> sgw = epcHelper->GetSgwNode ();
+  AnimationInterface::SetConstantPosition (sgw, 1, 28);
+
+  // Create a single RemoteHost
   NodeContainer remoteHostContainer;
   remoteHostContainer.Create (1);
   Ptr<Node> remoteHost = remoteHostContainer.Get (0);
   InternetStackHelper internet;
   internet.Install (remoteHostContainer);
+  AnimationInterface::SetConstantPosition (remoteHost, 1, 30);
 
   // Create the Internet
   PointToPointHelper p2ph;
@@ -116,11 +129,11 @@ main (int argc, char *argv[])
   Ptr<ListPositionAllocator> positionAlloc = CreateObject<ListPositionAllocator> ();
   for (uint16_t i = 0; i < numUE; i++)
     {
-      positionAlloc->Add (Vector (distance * i, 0, 0));
+      positionAlloc->Add (Vector (distance * i + distance, 0, 0));
     }
   MobilityHelper ueMobility;
-  ueMobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
   ueMobility.SetPositionAllocator(positionAlloc);
+  ueMobility.SetMobilityModel ("ns3::RandomWalk2dMobilityModel", "Bounds", RectangleValue (Rectangle (0, 50, 0, 50)));
   ueMobility.Install(ueNodes);
 
   MobilityHelper gnbMobility;
@@ -139,8 +152,19 @@ main (int argc, char *argv[])
   gnbMobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
   gnbMobility.Install (gnbNodes);
 
-  /** DEBUG
-  // iterate our nodes and print their position.
+/*DEBUG
+  // iterate UE nodes and print their position.
+  for (NodeContainer::Iterator j = ueNodes.Begin ();
+          j != ueNodes.End (); ++j)
+    {
+      Ptr<Node> object = *j;
+      Ptr<MobilityModel> position = object->GetObject<MobilityModel> ();
+      NS_ASSERT (position != 0);
+      Vector pos = position->GetPosition ();
+      anim.SetConstantPosition (object, pos.x, pos.y);
+    }
+
+  // iterate gNB nodes and print their position.
   for (NodeContainer::Iterator j = gnbNodes.Begin ();
        j != gnbNodes.End (); ++j)
     {
@@ -148,10 +172,11 @@ main (int argc, char *argv[])
       Ptr<MobilityModel> position = object->GetObject<MobilityModel> ();
       NS_ASSERT (position != 0);
       Vector pos = position->GetPosition ();
-      std::cout << "x=" << pos.x << ", y=" << pos.y << ", z=" << pos.z << std::endl;
+      //std::cout << "x=" << pos.x << ", y=" << pos.y << ", z=" << pos.z << std::endl;
+      anim.SetConstantPosition (object, pos.x, pos.y);
     }
-  DEBUG **/
-
+DEBUG*/
+  
   // Install LTE Devices to the nodes
   NetDeviceContainer enbLteDevs = lteHelper->InstallEnbDevice (gnbNodes);
   NetDeviceContainer ueLteDevs = lteHelper->InstallUeDevice (ueNodes);
@@ -231,6 +256,21 @@ main (int argc, char *argv[])
   FlowMonitorHelper flowmon;
   Ptr<FlowMonitor> monitor = flowmon.InstallAll ();
 
+  //Setup the animation
+  std::string animFile = "gcl-animation.xml" ;  // Name of file for animation output
+  // Create the animation object and configure for specified output
+  //AnimationInterface anim (animFile);
+  AnimationInterface * pAnim = new AnimationInterface (animFile);
+  pAnim->EnablePacketMetadata (); // Optional
+  pAnim->EnableIpv4L3ProtocolCounters (Seconds (0), Seconds (2)); // Optional
+  pAnim->SetMobilityPollInterval (Seconds (0.05));
+  
+  pAnim->SetStartTime (Seconds(0));
+  pAnim->SetStopTime (Seconds(2));
+
+  //TODO
+  //Hide MME, id = 2
+
   Simulator::Stop (simTime);
   Simulator::Run ();
 
@@ -254,5 +294,7 @@ main (int argc, char *argv[])
   config.ConfigureAttributes();*/
 
   Simulator::Destroy ();
+  delete pAnim;
+
   return 0;
 }
