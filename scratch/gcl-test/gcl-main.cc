@@ -40,14 +40,102 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE ("GCLSimulation");
 
+void
+NotifyConnectionEstablishedUe (std::string context,
+                               uint64_t imsi,
+                               uint16_t cellid,
+                               uint16_t rnti)
+{
+  std::cout << Simulator::Now ().GetSeconds () << " " << context
+            << " UE IMSI " << imsi
+            << ": connected to CellId " << cellid
+            << " with RNTI " << rnti
+            << std::endl;
+}
+
+void
+NotifyHandoverStartUe (std::string context,
+                       uint64_t imsi,
+                       uint16_t cellid,
+                       uint16_t rnti,
+                       uint16_t targetCellId)
+{
+  std::cout << Simulator::Now ().GetSeconds () << " " << context
+            << " UE IMSI " << imsi
+            << ": previously connected to CellId " << cellid
+            << " with RNTI " << rnti
+            << ", doing handover to CellId " << targetCellId
+            << std::endl;
+}
+
+void
+NotifyHandoverEndOkUe (std::string context,
+                       uint64_t imsi,
+                       uint16_t cellid,
+                       uint16_t rnti)
+{
+  std::cout << Simulator::Now ().GetSeconds () << " " << context
+            << " UE IMSI " << imsi
+            << ": successful handover to CellId " << cellid
+            << " with RNTI " << rnti
+            << std::endl;
+}
+
+void
+NotifyConnectionEstablishedEnb (std::string context,
+                                uint64_t imsi,
+                                uint16_t cellid,
+                                uint16_t rnti)
+{
+  std::cout << Simulator::Now ().GetSeconds () << " " << context
+            << " eNB CellId " << cellid
+            << ": successful connection of UE with IMSI " << imsi
+            << " RNTI " << rnti
+            << std::endl;
+}
+
+void
+NotifyHandoverStartEnb (std::string context,
+                        uint64_t imsi,
+                        uint16_t cellid,
+                        uint16_t rnti,
+                        uint16_t targetCellId)
+{
+  std::cout << Simulator::Now ().GetSeconds () << " " << context
+            << " eNB CellId " << cellid
+            << ": start handover of UE with IMSI " << imsi
+            << " RNTI " << rnti
+            << " to CellId " << targetCellId
+            << std::endl;
+}
+
+void
+NotifyHandoverEndOkEnb (std::string context,
+                        uint64_t imsi,
+                        uint16_t cellid,
+                        uint16_t rnti)
+{
+  std::cout << Simulator::Now ().GetSeconds () << " " << context
+            << " eNB CellId " << cellid
+            << ": completed handover of UE with IMSI " << imsi
+            << " RNTI " << rnti
+            << std::endl;
+}
+
+
+
 int
 main (int argc, char *argv[])
 {
   uint16_t numNodePairs = 2;
   uint16_t numUE = 2;
   uint16_t numGnb = 20;
+  uint16_t numBearersPerUe = 2;
   Time simTime = MilliSeconds (2000);
-  double distance = 13.0;
+  double yForUe = 5.0;   // m
+  double speed = 2.0;       // m/s
+  double distance = 13.0; //m
+  double enbTxPowerDbm = 46.0;
   Time interPacketInterval = MilliSeconds (100);
   bool useCa = false;
   bool disableDl = false;
@@ -69,7 +157,7 @@ main (int argc, char *argv[])
   ConfigStore inputConfig;
   inputConfig.ConfigureDefaults ();
 
-  // parse again so you can override default values from the command line
+  // Parse again so you can override default values from the command line
   cmd.Parse(argc, argv);
 
   if (useCa)
@@ -88,11 +176,20 @@ main (int argc, char *argv[])
   Ptr<PointToPointEpcHelper> epcHelper = CreateObject<PointToPointEpcHelper> ();
   lteHelper->SetEpcHelper (epcHelper);
 
-  //PGW Node
+  // Handover setting
+  lteHelper->SetSchedulerType ("ns3::RrFfMacScheduler");
+  lteHelper->SetHandoverAlgorithmType ("ns3::A2A4RsrqHandoverAlgorithm");
+  lteHelper->SetHandoverAlgorithmAttribute ("ServingCellThreshold",
+                                            UintegerValue (30));
+  lteHelper->SetHandoverAlgorithmAttribute ("NeighbourCellOffset",
+                                            UintegerValue (1));
+
+
+  // PGW Node
   Ptr<Node> pgw = epcHelper->GetPgwNode ();
   AnimationInterface::SetConstantPosition (pgw, 1, 29);
 
-  //SGW node
+  // SGW node
   Ptr<Node> sgw = epcHelper->GetSgwNode ();
   AnimationInterface::SetConstantPosition (sgw, 1, 28);
 
@@ -125,17 +222,24 @@ main (int argc, char *argv[])
   gnbNodes.Create (numGnb);
   ueNodes.Create (numUE);
 
-  // Install Mobility Model
+  // Install Mobility Model for UE
   Ptr<ListPositionAllocator> positionAlloc = CreateObject<ListPositionAllocator> ();
   for (uint16_t i = 0; i < numUE; i++)
     {
       positionAlloc->Add (Vector (distance * i + distance, 0, 0));
     }
   MobilityHelper ueMobility;
+  /*
   ueMobility.SetPositionAllocator(positionAlloc);
   ueMobility.SetMobilityModel ("ns3::RandomWalk2dMobilityModel", "Bounds", RectangleValue (Rectangle (0, 50, 0, 50)));
   ueMobility.Install(ueNodes);
+  */
+  ueMobility.SetMobilityModel ("ns3::ConstantVelocityMobilityModel");
+  ueMobility.Install (ueNodes);
+  ueNodes.Get (0)->GetObject<MobilityModel> ()->SetPosition (Vector (0, yForUe, 0));
+  ueNodes.Get (0)->GetObject<ConstantVelocityMobilityModel> ()->SetVelocity (Vector (speed, 0, 0));
 
+  // Install Mobility Model for gNB
   MobilityHelper gnbMobility;
   // setup the grid itself: objects are laid out
   // started from (0,0) with 5 objects per row, 
@@ -177,7 +281,8 @@ main (int argc, char *argv[])
     }
 DEBUG*/
   
-  // Install LTE Devices to the nodes
+  // Install LTE and UE Devices to the nodes
+  Config::SetDefault ("ns3::LteEnbPhy::TxPower", DoubleValue (enbTxPowerDbm));
   NetDeviceContainer enbLteDevs = lteHelper->InstallEnbDevice (gnbNodes);
   NetDeviceContainer ueLteDevs = lteHelper->InstallUeDevice (ueNodes);
 
@@ -249,6 +354,11 @@ DEBUG*/
 
   serverApps.Start (MilliSeconds (480));
   clientApps.Start (MilliSeconds (500));
+
+  // Add X2 interface
+  lteHelper->AddX2Interface (enbNodes);
+   
+  // Tracing
   lteHelper->EnableTraces ();
   // Uncomment to enable PCAP tracing
   //p2ph.EnablePcapAll("lena-simple-epc");
@@ -256,7 +366,7 @@ DEBUG*/
   FlowMonitorHelper flowmon;
   Ptr<FlowMonitor> monitor = flowmon.InstallAll ();
 
-  //Setup the animation
+  // Setup the animation
   std::string animFile = "gcl-animation.xml" ;  // Name of file for animation output
   // Create the animation object and configure for specified output
   //AnimationInterface anim (animFile);
@@ -268,8 +378,22 @@ DEBUG*/
   pAnim->SetStartTime (Seconds(0));
   pAnim->SetStopTime (Seconds(2));
 
-  //TODO
-  //Hide MME, id = 2
+  // TODO
+  // Hide MME, id = 2
+
+  // Connect custom trace sinks for RRC connection establishment and handover notification
+  Config::Connect ("/NodeList/*/DeviceList/*/LteEnbRrc/ConnectionEstablished",
+                   MakeCallback (&NotifyConnectionEstablishedEnb));
+  Config::Connect ("/NodeList/*/DeviceList/*/LteUeRrc/ConnectionEstablished",
+                   MakeCallback (&NotifyConnectionEstablishedUe));
+  Config::Connect ("/NodeList/*/DeviceList/*/LteEnbRrc/HandoverStart",
+                   MakeCallback (&NotifyHandoverStartEnb));
+  Config::Connect ("/NodeList/*/DeviceList/*/LteUeRrc/HandoverStart",
+                   MakeCallback (&NotifyHandoverStartUe));
+  Config::Connect ("/NodeList/*/DeviceList/*/LteEnbRrc/HandoverEndOk",
+                   MakeCallback (&NotifyHandoverEndOkEnb));
+  Config::Connect ("/NodeList/*/DeviceList/*/LteUeRrc/HandoverEndOk",
+                   MakeCallback (&NotifyHandoverEndOkUe));
 
   Simulator::Stop (simTime);
   Simulator::Run ();
