@@ -130,7 +130,7 @@ main (int argc, char *argv[])
   uint16_t numNodePairs = 2;
   uint16_t numUE = 2;
   uint16_t numGnb = 20;
-  uint16_t numBearersPerUe = 2;
+  //uint16_t numBearersPerUe = 2;
   Time simTime = MilliSeconds (2000);
   double yForUe = 5.0;   // m
   double speed = 2.0;       // m/s
@@ -356,7 +356,7 @@ DEBUG*/
   clientApps.Start (MilliSeconds (500));
 
   // Add X2 interface
-  lteHelper->AddX2Interface (enbNodes);
+  lteHelper->AddX2Interface (gnbNodes);
    
   // Tracing
   lteHelper->EnableTraces ();
