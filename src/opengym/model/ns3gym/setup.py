@@ -4,18 +4,19 @@ import os.path
 import os
 import re
 import ns3gym
+
 cwd = os.getcwd()
 protobufFile = cwd + '/ns3gym/messages_pb2.py'
 
 if not os.path.isfile(protobufFile):
-    # 如果没有protocbuf文件，则尝试产生
+    #if no protocbuf file, try to generate it
     rc = os.system('whereis protoc')
-    # 先检查是否有whereis指令
+    #check whereis command
     if rc != 0:
         print("Command: ", "whereis protoc", "not found.")
         sys.exit("Missing command 'whereis', please check!")
     protoc = None
-    # 再查找protoc指令
+    #check protoc command
     rt = os.popen("whereis protoc").read()
     protoc_paths = re.finditer(r'/[^\s]+', rt)
     for protoc_path in protoc_paths:
@@ -24,13 +25,16 @@ if not os.path.isfile(protobufFile):
         else:
             protoc = protoc_path[0]
             break
-    # 如果没有找到protoc，则需要报错
+    # if no protoc command, then need to check Google Protocol Buffers install
     if protoc is None:
         print("File: ", "ns3-gym/src/opengym/model/ns3gym/ns3gym/messages_pb2.py", " was not found.")
-        sys.exit('Protocol Buffer messages are missing. Please run ./waf configure to generate the file')
-    # 如果有，则尝试产生文件
+        sys.exit('Protocol Buffer messages are missing. Please run check Google Protocol Buffers or /messages.proto file')
+    #if has protoc command, try to generate python file
     print('generate proto file')
-    os.system(f'{protoc} --python_out=./ns3gym -I=./ns3gym messages.proto')
+    os.chdir('../' )
+    #input file = messages.proto
+    os.system('protoc ./messages.proto --python_out=./ns3gym/ns3gym')
+    os.chdir('./ns3gym')
 
 def readme():
     with open('README.md') as f:
