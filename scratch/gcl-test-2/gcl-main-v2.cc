@@ -629,7 +629,7 @@ main (int argc, char *argv[])
         lteHelper->SetSpectrumChannelType ("ns3::MultiModelSpectrumChannel");
     }
 
-// install macro eNB mobility model and configure nodes.
+    // install macro eNB mobility model and configure nodes.
     MobilityHelper macroCellMobility;
     macroCellMobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
     macroCellMobility.Install (macroNodes);
@@ -705,7 +705,7 @@ main (int argc, char *argv[])
     enbDevs.Add(macroCellDevs);
     enbDevs.Add(smallCellDevs);
 
-// install UE mobility model and configure nodes.
+    // install UE mobility model and configure nodes.
     MobilityHelper ueMobility;
     if (ueMaxSpeed > 1e-6 && ueMinSpeed > 1e-6)
     {
@@ -937,7 +937,8 @@ main (int argc, char *argv[])
     // generate REM without running simulation.
     Ptr<RadioEnvironmentMapHelper> remHelper;
     if (generateRem)
-    {
+    {   
+        NS_LOG_LOGIC ("generate REM without running simulation");
         buildingsPrintListToFile ("BuildingsList.txt");
         eNBsPrintListToFile ("eNBsList.txt");
         uesPrintListToFile ("UEsList.txt");
@@ -959,7 +960,8 @@ main (int argc, char *argv[])
         remHelper->Install ();
     }
     else
-    {
+    {   
+        NS_LOG_LOGIC ("Setup simulation stop time");
         Simulator::Stop (Seconds (simTime));
     }
 
@@ -974,11 +976,13 @@ main (int argc, char *argv[])
     CustomTracesHelper customTraces;
     customTraces.EnableHandoverTraces ();
     customTraces.EnableMobilityTraces ();
+    NS_LOG_LOGIC ("Running simulation");
     Simulator::Run ();
     lteHelper = 0;
     Simulator::Destroy ();
     if (!generateRem)
-    {
+    {   
+        NS_LOG_LOGIC ("Print simulation time");
         time(&toc);
         std::cout << "Simulation time: " << simTime << "s" << std::endl;
         std::cout << "Execution time: " << difftime (toc, tic) << "s" << std::endl;
