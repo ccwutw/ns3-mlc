@@ -943,7 +943,7 @@ main (int argc, char *argv[])
         eNBsPrintListToFile ("eNBsList.txt");
         uesPrintListToFile ("UEsList.txt");
         remHelper = CreateObject<RadioEnvironmentMapHelper> ();
-        remHelper->SetAttribute ("ChannelPath", StringValue ("/ChannelList/0"));
+        remHelper->SetAttribute ("ChannelPath", StringValue ("/ChannelList/2"));
         remHelper->SetAttribute ("OutputFile", StringValue ("RadioEnvironmentMap.rem"));
         remHelper->SetAttribute ("XMin", DoubleValue (topoBounds.xMin));
         remHelper->SetAttribute ("XMax", DoubleValue (topoBounds.xMax));

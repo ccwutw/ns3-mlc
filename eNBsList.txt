@@ -1,0 +1,12 @@
+set label "1" at 375.5,125 left font "Helvetica,4" textcolor rgb "white"front point pt 2 ps 0.3 lc rgb "white" offset 0,0
+set label "2" at 374.75,125.433 left font "Helvetica,4" textcolor rgb "white"front point pt 2 ps 0.3 lc rgb "white" offset 0,0
+set label "3" at 374.75,124.567 left font "Helvetica,4" textcolor rgb "white"front point pt 2 ps 0.3 lc rgb "white" offset 0,0
+set label "4" at 125.5,558.013 left font "Helvetica,4" textcolor rgb "white"front point pt 2 ps 0.3 lc rgb "white" offset 0,0
+set label "5" at 124.75,558.446 left font "Helvetica,4" textcolor rgb "white"front point pt 2 ps 0.3 lc rgb "white" offset 0,0
+set label "6" at 124.75,557.58 left font "Helvetica,4" textcolor rgb "white"front point pt 2 ps 0.3 lc rgb "white" offset 0,0
+set label "7" at 625.5,558.013 left font "Helvetica,4" textcolor rgb "white"front point pt 2 ps 0.3 lc rgb "white" offset 0,0
+set label "8" at 624.75,558.446 left font "Helvetica,4" textcolor rgb "white"front point pt 2 ps 0.3 lc rgb "white" offset 0,0
+set label "9" at 624.75,557.58 left font "Helvetica,4" textcolor rgb "white"front point pt 2 ps 0.3 lc rgb "white" offset 0,0
+set label "10" at 508.487,152.406 left font "Helvetica,4" textcolor rgb "white"front point pt 2 ps 0.3 lc rgb "white" offset 0,0
+set label "11" at 522.623,138.258 left font "Helvetica,4" textcolor rgb "white"front point pt 2 ps 0.3 lc rgb "white" offset 0,0
+set label "12" at 527.808,157.574 left font "Helvetica,4" textcolor rgb "white"front point pt 2 ps 0.3 lc rgb "white" offset 0,0
