@@ -15,7 +15,12 @@
 #include <sstream>
 #include <string>
 #include <vector>
+
+#include <ns3/flow-monitor-helper.h>
+#include <ns3/flow-monitor-module.h>
+
 #define pi 3.14159265359
+
 using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE ("GCLSimV2");
@@ -552,7 +557,7 @@ main (int argc, char *argv[])
     double stWidth = 20; // city street width.
     double blkZmin_dim = 6.0; // minimum z dimension of blocks.
     double blkZmax_dim = 15.0; // maximum z dimension of blocks.
-    double simTime = 900.0; // total duration of the simulation [s].
+    double simTime = 400.0; // total duration of the simulation [s].
     bool epc = true; // setup the EPC. otherwise, only the LTE radio access
                     // will be simulated with RLC SM.
     bool epcDl = true; // activate data flows in the downlink. requires epc.
@@ -569,6 +574,7 @@ main (int argc, char *argv[])
     bool generateRem = false; // generate a REM and then abort the simulation.
     int32_t remRbId = -1; // resource block id for which REM will be generated. if
                         // -1, REM will be average of all RBs of control channel
+     
 ///////////////////////////////////////////////
     Config::SetDefault ("ns3::LteEnbRrc::SrsPeriodicity", UintegerValue (srsPeriodicity));
     Ptr <LteHelper> lteHelper = CreateObject<LteHelper> ();
@@ -775,6 +781,10 @@ main (int argc, char *argv[])
     Ipv4StaticRoutingHelper ipv4RoutingHelper;
     Ipv4InterfaceContainer ueIPInterfaces;
     Ptr<Node> remoteHost;
+    
+    // install Flow Monitor
+    FlowMonitorHelper flowmon;
+    Ptr<FlowMonitor> monitor = flowmon.InstallAll ();
 
     if (epc)
     {
@@ -978,6 +988,25 @@ main (int argc, char *argv[])
     customTraces.EnableMobilityTraces ();
     NS_LOG_LOGIC ("Running simulation");
     Simulator::Run ();
+    
+    /** Print per flow statistics START */ 
+    monitor->CheckForLostPackets ();
+    Ptr<Ipv4FlowClassifier> classifier = DynamicCast<Ipv4FlowClassifier> (flowmon.GetClassifier ());
+    FlowMonitor::FlowStatsContainer stats = monitor->GetFlowStats ();
+    for (std::map<FlowId, FlowMonitor::FlowStats>::const_iterator i = stats.begin (); i != stats.end (); ++i){
+        Ipv4FlowClassifier::FiveTuple t = classifier->FindFlow (i->first);
+        std::cout << "Flow " << i->first << " (" << t.sourceAddress << " -> " << t.destinationAddress << ")\n";
+        std::cout << "  Tx Packets: " << i->second.txPackets << "\n";
+        std::cout << "  Tx Bytes:   " << i->second.txBytes << "\n";
+        std::cout << "  TxOffered:  " << i->second.txBytes * 8.0 / (simTime) / 1000 / 1000  << " Mbps\n";
+        std::cout << "  Rx Packets: " << i->second.rxPackets << "\n";
+        std::cout << "  Rx Bytes:   " << i->second.rxBytes << "\n";
+        std::cout << "  Throughput: " << i->second.rxBytes * 8.0 / (simTime) / 1000 / 1000  << " Mbps\n";
+        std::cout << "  Delay Sum: " << i->second.delaySum << "\n";
+        std::cout << "  Jitter Sum: " << i->second.jitterSum << "\n";
+    }
+    /* Print per flow statistics END **/
+    
     lteHelper = 0;
     Simulator::Destroy ();
     if (!generateRem)
