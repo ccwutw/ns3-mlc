@@ -557,7 +557,7 @@ main (int argc, char *argv[])
     double stWidth = 20; // city street width.
     double blkZmin_dim = 6.0; // minimum z dimension of blocks.
     double blkZmax_dim = 15.0; // maximum z dimension of blocks.
-    double simTime = 400.0; // total duration of the simulation [s].
+    double simTime = 900.0; // total duration of the simulation [s].
     bool epc = true; // setup the EPC. otherwise, only the LTE radio access
                     // will be simulated with RLC SM.
     bool epcDl = true; // activate data flows in the downlink. requires epc.
