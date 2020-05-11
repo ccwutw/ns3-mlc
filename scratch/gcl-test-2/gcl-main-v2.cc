@@ -577,6 +577,9 @@ main (int argc, char *argv[])
      
 ///////////////////////////////////////////////
     Config::SetDefault ("ns3::LteEnbRrc::SrsPeriodicity", UintegerValue (srsPeriodicity));
+    //Config::SetDefault ("ns3::LteEnbRrc::DefaultTransmissionMode", UintegerValue (2));
+    //Config::SetDefault ("ns3::RadioEnvironmentMapHelper::Bandwidth", UintegerValue (100));
+
     Ptr <LteHelper> lteHelper = CreateObject<LteHelper> ();
     Ptr<PointToPointEpcHelper> epcHelper;
     // configure MAC scheduler and handover algorithm.
