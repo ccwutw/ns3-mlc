@@ -183,16 +183,16 @@ GclGymEnv::GetObservation()
   uint32_t high = 1000000000.0;
   Ptr<UniformRandomVariable> rngInt = CreateObject<UniformRandomVariable> ();
 
-  std::vector<uint32_t> shape = {nodeNum,};
+  std::vector<uint32_t> shape = {parameterNum,};
   Ptr<OpenGymBoxContainer<uint32_t> > box = CreateObject<OpenGymBoxContainer<uint32_t> >(shape);
 
   // generate random data
-  for (uint32_t i = 0; i<nodeNum; i++){
+  for (uint32_t i = 0; i<parameterNum; i++){
     uint32_t value = rngInt->GetInteger(low, high);
     box->AddValue(value);
   }
 
-  Ptr<OpenGymDiscreteContainer> discrete = CreateObject<OpenGymDiscreteContainer>(nodeNum);
+  Ptr<OpenGymDiscreteContainer> discrete = CreateObject<OpenGymDiscreteContainer>(parameterNum);
   uint32_t value = rngInt->GetInteger(low, high);
   discrete->SetValue(value);
 
