@@ -21,6 +21,7 @@
 #include <ns3/flow-monitor-module.h>
 
 #include <ns3/opengym-module.h>
+#include "gcl-drl-env.h"
 
 #define pi 3.14159265359
 
