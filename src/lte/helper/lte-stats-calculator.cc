@@ -147,7 +147,8 @@ LteStatsCalculator::FindImsiFromEnbRlcPath (std::string path)
   // We retrieve the UeManager associated to the C-RNTI and perform the IMSI lookup
   std::string ueMapPath = path.substr (0, path.find ("/DataRadioBearerMap"));
   Config::MatchContainer match = Config::LookupMatches (ueMapPath);
-
+  NS_LOG_LOGIC ("ueMapPath: "<<ueMapPath);
+  
   if (match.GetN () != 0)
     {
       Ptr<Object> ueInfo = match.Get (0);
