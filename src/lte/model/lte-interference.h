@@ -117,6 +117,13 @@ public:
    */
   void SetNoisePowerSpectralDensity (Ptr<const SpectrumValue> noisePsd);
 
+  //Patch for observation
+  bool m_receiving;
+  Time m_lastChangeTime;
+  Ptr<const SpectrumValue> m_noise; ///< the noise value
+  Ptr<SpectrumValue> m_rxSignal;
+  Ptr<SpectrumValue> m_allSignals;
+
 private:
   /**
    * Considitionally evaluate chunk
@@ -138,21 +145,25 @@ private:
 
 
 
-  bool m_receiving; ///< are we receiving?
+  //bool m_receiving; ///< are we receiving?
 
-  Ptr<SpectrumValue> m_rxSignal; /**< stores the power spectral density of
+  
+  //Ptr<SpectrumValue> m_rxSignal; 
+  /**< stores the power spectral density of
                                   * the signal whose RX is being
                                   * attempted
                                   */
 
-  Ptr<SpectrumValue> m_allSignals; /**< stores the spectral
+  //Ptr<SpectrumValue> m_allSignals; 
+  /**< stores the spectral
                                     * power density of the sum of incoming signals;
                                     * does not include noise, includes the SPD of the signal being RX
                                     */
 
-  Ptr<const SpectrumValue> m_noise; ///< the noise value
+  //Ptr<const SpectrumValue> m_noise; ///< the noise value
 
-  Time m_lastChangeTime;     /**< the time of the last change in
+  //Time m_lastChangeTime;     
+  /**< the time of the last change in
                                 m_TotalPower */
 
   uint32_t m_lastSignalId; ///< the last signal ID

@@ -394,6 +394,9 @@ public:
     (const uint64_t imsi, const uint16_t cellId, const uint16_t rnti,
     const State oldState, const State newState);
 
+  //patch for public observation 
+  std::map <uint8_t, Ptr<LteDataRadioBearerInfo> > m_drbMap;
+
 private:
 
   /** 
@@ -512,7 +515,7 @@ private:
    * The `DataRadioBearerMap` attribute. List of UE DataRadioBearerInfo by
    * DRBID.
    */
-  std::map <uint8_t, Ptr<LteDataRadioBearerInfo> > m_drbMap;
+  //std::map <uint8_t, Ptr<LteDataRadioBearerInfo> > m_drbMap;
 
   /**
    * The `Srb0` attribute. SignalingRadioBearerInfo for SRB0.
@@ -1098,7 +1101,6 @@ public:
   typedef void (*TimerExpiryTracedCallback)
       (const uint64_t imsi, const uint16_t rnti, const uint16_t cellId,
        const std::string cause);
-
 
 private:
 

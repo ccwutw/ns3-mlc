@@ -262,6 +262,13 @@ OpenGymTupleContainer::DoInitialize (void)
   //NS_LOG_FUNCTION (this);
 }
 
+
+uint32_t
+OpenGymTupleContainer::size()
+{
+  return m_tuple.size();
+}
+
 ns3opengym::DataContainer
 OpenGymTupleContainer::GetDataContainerPbMsg()
 {
