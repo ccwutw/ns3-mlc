@@ -124,3 +124,19 @@ However, we recommend to follow the Gitlab guidelines for starters,
 that includes creating a Gitlab account, forking the ns-3-dev project
 under the new account's name, and then cloning the forked repository.
 You can find more information in the manual [link].
+
+## Import Gymnasium (previous Gym)
+Gymnasium API standard for single-agent reinforcement learning environments, with popular reference environments and related utilities.
+To install Gymnasium, use the following command:
+```shell
+pip install gymnasium
+```
+
+Next, make your own custom environment from this example.
+```shell
+git clone https://github.com/Farama-Foundation/gym-examples
+cd gym-examples
+python -m venv .env
+source .env/bin/activate
+pip install -e .
+```
